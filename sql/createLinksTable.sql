@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS links
 (
-  id INTEGER PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   outgoing_links_count INTEGER NOT NULL,
   incoming_links_count INTEGER NOT NULL,
   outgoing_links TEXT NOT NULL,
