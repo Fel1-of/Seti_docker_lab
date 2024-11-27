@@ -16,11 +16,11 @@ from sdow.helpers import InvalidRequest, fetch_wikipedia_pages_info
 
 # Connect to the SDOW database.
 database = Database(
-    dbname=getenv('DBNAME'),
-    user=getenv('USER'),
-    password=getenv('PASSWORD'),
-    host=getenv('HOST'),
-    port=getenv('PORT')
+    dbname=getenv('DBNAME', 'sdow'),
+    user=getenv('USER', 'postgres'),
+    password=getenv('PASSWORD', 'admin'),
+    host=getenv('HOST', 'localhost'),
+    port=getenv('PORT', '5432')
 )
 
 # Initialize the Flask app.
