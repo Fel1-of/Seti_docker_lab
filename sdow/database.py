@@ -234,8 +234,8 @@ class Database:
       degrees_count = len(search['paths'][0]) - 1
 
     # There is no need to escape the query parameters here since they are never user-defined.
-    query = (f'INSERT INTO searches VALUES ({search['source_id']}, {search['target_id']}, {search['duration']},'
-             f'{degrees_count}, {paths_count}, CURRENT_TIMESTAMP);')
+    query = (f"INSERT INTO searches VALUES ({search['source_id']}, {search['target_id']}, {search['duration']},"
+             f"{degrees_count}, {paths_count}, CURRENT_TIMESTAMP);")
     self.connection.execute(query)
     self.connection.commit()
 
