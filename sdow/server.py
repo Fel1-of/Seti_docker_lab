@@ -14,14 +14,7 @@ from os import getenv
 from sdow.database import Database
 from sdow.helpers import InvalidRequest, fetch_wikipedia_pages_info
 
-# Connect to the SDOW database.
-database = Database(
-    dbname=getenv('DBNAME', 'sdow'),
-    user=getenv('USER', 'postgres'),
-    password=getenv('PASSWORD', 'admin'),
-    host=getenv('HOST', 'localhost'),
-    port=getenv('PORT', '5432')
-)
+database: Database
 
 # Initialize the Flask app.
 app = Flask(__name__)
@@ -33,6 +26,19 @@ CORS(app)
 
 # Add gzip compression.
 Compress(app)
+
+
+# Connect to the SDOW database.
+@app.before_request
+def connect_db():
+    global database
+    database = Database(
+        dbname=getenv('DB_NAME', 'sdow'),
+        user=getenv('DB_USER', 'postgres'),
+        password=getenv('DB_PASSWORD', 'admin'),
+        host=getenv('DB_HOST', 'localhost'),
+        port=getenv('DB_PORT', '5432')
+    )
 
 
 # Gunicorn's entry point.

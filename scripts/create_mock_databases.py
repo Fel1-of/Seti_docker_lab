@@ -69,7 +69,7 @@ for i in range(1, 36):
 
   is_redirect = 0 if i < 30 else 1
 
-  conn.execute('INSERT INTO pages VALUES ({0}, "{1}", {2});'.format(
+  conn.execute("INSERT INTO pages VALUES ({0}, '{1}', {2});".format(
       prod_page_ids[i], page_name, is_redirect))
 
 
@@ -128,7 +128,7 @@ for page_id, outgoing_links in forward_links:
   incoming_links = [prod_page_ids[i] for i in incoming_links]
   incoming_links = '|'.join(incoming_links)
 
-  conn.execute('INSERT INTO links VALUES ({0}, {1}, {2}, "{3}", "{4}");'.format(
+  conn.execute("INSERT INTO links VALUES ({0}, {1}, {2}, '{3}', '{4}');".format(
       prod_page_ids[page_id], outgoing_links_count, incoming_links_count, outgoing_links, incoming_links))
 
 conn.commit()

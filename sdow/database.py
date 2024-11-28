@@ -41,7 +41,7 @@ class Database:
     """
     sanitized_page_title = helpers.get_sanitized_page_title(page_title)
 
-    query = 'SELECT * FROM pages WHERE LOWER(title) = LOWER($1);'
+    query = "SELECT * FROM pages WHERE LOWER(title) = LOWER(%s);"
     query_bindings = (sanitized_page_title,)
     self.cursor.execute(query, query_bindings)
 
@@ -64,7 +64,7 @@ class Database:
         return current_page_id, helpers.get_readable_page_title(current_page_title), False
 
     # If all the results are redirects, use the page to which the first result redirects.
-    query = 'SELECT target_id, title FROM redirects INNER JOIN pages ON pages.id = target_id WHERE source_id = $1;'
+    query = 'SELECT target_id, title FROM redirects INNER JOIN pages ON pages.id = target_id WHERE source_id = %s;'
     query_bindings = (results[0][0],)
     self.cursor.execute(query, query_bindings)
 
@@ -92,7 +92,7 @@ class Database:
     """
     helpers.validate_page_id(page_id)
 
-    query = 'SELECT title FROM pages WHERE id = $1;'
+    query = 'SELECT title FROM pages WHERE id = %s;'
     query_bindings = (page_id,)
     self.cursor.execute(query, query_bindings)
 
