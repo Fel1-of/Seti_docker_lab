@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS pages
 (
-  id INTEGER PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   is_redirect INTEGER NOT NULL 
 );
@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS pages
 .separator "\t"
 .import /dev/stdin pages
 
-CREATE INDEX pages_title_index ON pages(title COLLATE NOCASE);
+CREATE INDEX pages_title_index ON pages(LOWER(title));

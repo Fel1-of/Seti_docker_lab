@@ -8,3 +8,4 @@ gunicorn == 23.0.0
 protobuf == 5.28.3
 requests == 2.32.3
 supervisor == 4.2.5
+psycopg == 3.2.3

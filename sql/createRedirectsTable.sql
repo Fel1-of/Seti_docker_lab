@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS redirects
 (
-  source_id INTEGER PRIMARY KEY,
+  source_id SERIAL PRIMARY KEY,
   target_id INTEGER NOT NULL
 );
 

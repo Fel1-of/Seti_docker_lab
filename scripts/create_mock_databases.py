@@ -1,21 +1,26 @@
 import os
-import sqlite3
-import subprocess
+import psycopg
 from collections import defaultdict
 
 cwd = os.path.dirname(__file__)
-mock_sdow_database_filename = os.path.join(cwd, '../sdow/sdow.sqlite')
-mock_searches_database_filename = os.path.join(cwd, '../sdow/searches.sqlite')
+# mock_sdow_database_filename = os.path.join(cwd, '../sdow/sdow.sqlite')
+# mock_searches_database_filename = os.path.join(cwd, '../sdow/searches.sqlite')
 searches_database_sql_filename = os.path.join(cwd, '../sql/createSearchesTable.sql')
 
-print('[INFO] Creating mock SDOW database: {0}'.format(mock_sdow_database_filename))
-
-conn = sqlite3.connect(mock_sdow_database_filename)
+# print('[INFO] Creating mock SDOW database: {0}'.format(mock_sdow_database_filename))
+print('[INFO] Creating mock SDOW database')
+conn = psycopg.connect(
+    dbname=os.getenv('DBNAME', 'sdow'),
+    user=os.getenv('USER', 'postgres'),
+    password=os.getenv('PASSWORD', 'admin'),
+    host=os.getenv('HOST', 'localhost'),
+    port=os.getenv('PORT', '5432')
+)
 
 
 # Create pages table.
 conn.execute('DROP TABLE IF EXISTS pages')
-conn.execute('CREATE TABLE pages(id INTEGER PRIMARY KEY, title TEXT, is_redirect INT)')
+conn.execute('CREATE TABLE pages(id SERIAL PRIMARY KEY, title TEXT, is_redirect INT)')
 
 prod_page_ids = {
     1: '22770',
@@ -71,7 +76,7 @@ for i in range(1, 36):
 # Create redirects table.
 conn.execute('DROP TABLE IF EXISTS redirects')
 conn.execute(
-    'CREATE TABLE redirects(source_id INTEGER PRIMARY KEY, target_id INTEGER NOT NULL)')
+    'CREATE TABLE redirects(source_id SERIAL PRIMARY KEY, target_id INTEGER NOT NULL)')
 
 for i in range(30, 35):
   conn.execute('INSERT INTO redirects VALUES ({0}, {1});'.format(
@@ -80,8 +85,8 @@ for i in range(30, 35):
 
 # Create links table.
 conn.execute('DROP TABLE IF EXISTS links')
-conn.execute(
-    'CREATE TABLE links(id INTEGER PRIMARY KEY, outgoing_links_count INTEGER, incoming_links_count INTEGER, outgoing_links TEXT, incoming_links TEXT);')
+conn.execute('CREATE TABLE links(id SERIAL PRIMARY KEY, outgoing_links_count INTEGER, incoming_links_count INTEGER,'
+             'outgoing_links TEXT, incoming_links TEXT);')
 
 forward_links = [
     (1, [2, 4, 5, 10]),
@@ -128,18 +133,12 @@ for page_id, outgoing_links in forward_links:
 
 conn.commit()
 
-print('[INFO] Successfully created mock SDOW database: {0}'.format(mock_sdow_database_filename))
+print('[INFO] Creating mock searches table')
 
+conn.execute('DROP TABLE IF EXISTS searches')
+conn.execute('CREATE TABLE IF NOT EXISTS searches(source_id INTEGER NOT NULL, target_id INTEGER NOT NULL,'
+             'duration REAL NOT NULL, degrees_count INTEGER, paths_count INTEGER NOT NULL,'
+             't TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL);')
+conn.commit()
 
-print('[INFO] Creating mock searches database: {0}'.format(mock_searches_database_filename))
-
-conn = sqlite3.connect(mock_searches_database_filename)
-
-# Create searches table.
-subprocess.call('sqlite3 {0} ".read {1}"'.format(
-    mock_searches_database_filename, searches_database_sql_filename), shell=True)
-# conn.execute('DROP TABLE IF EXISTS searches')
-# conn.execute('CREATE TABLE IF NOT EXISTS searches(source_id INTEGER NOT NULL, target_id INTEGER NOT NULL, duration REAL NOT NULL, degrees_count INTEGER, paths_count INTEGER NOT NULL, t TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL);')
-
-print('[INFO] Successfully created mock searches database: {0}'.format(
-    mock_searches_database_filename))
+print('[INFO] Successfully created mock SDOW database')
