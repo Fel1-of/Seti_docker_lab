@@ -4,15 +4,14 @@ Server web framework.
 
 import time
 import logging
-import google.cloud.logging
 
 from flask_cors import CORS
 from flask_compress import Compress
 from flask import Flask, request, jsonify
 from os import getenv
 
-from sdow.database import Database
-from sdow.helpers import InvalidRequest, fetch_wikipedia_pages_info
+from backend.sdow.database import Database
+from backend.sdow.helpers import InvalidRequest, fetch_wikipedia_pages_info
 
 database: Database
 
@@ -43,12 +42,7 @@ def connect_db():
 
 # Gunicorn's entry point.
 def load_app(environment='dev'):
-    # Initialize GCP logging (production only).
-    if environment == 'prod':
-        print('[INFO] Starting app in production mode with remote logging enabled...')
-        logging_client = google.cloud.logging.Client()
-        logging_client.setup_logging()
-
+    print(f"[INFO] Starting app in environment '{environment}'...")
     return app
 
 
