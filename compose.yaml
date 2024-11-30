@@ -1,11 +1,31 @@
+networks:
+  net:
+    driver: bridge
+
 services:
   website:
     build: website
     ports:
       - "3000:80"
+    networks:
+      - net
+
+  server:
+    build: backend
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: postgres
+      DB_PASSWORD: genius
+    networks:
+      - net
+    depends_on:
+      - postgres
+
   postgres:
     image: "postgres:17-alpine3.20"
+    networks:
+      - net
     environment:
-      POSTGRES_USER: postgres
       POSTGRES_DB: sdow
-      POSTGRES_PASSWORD: admin
+      POSTGRES_PASSWORD: genius

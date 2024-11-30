@@ -1,8 +1,7 @@
 FROM python:3.13.0-alpine3.20
 
-WORKDIR /app
+WORKDIR app/
 
-# Если не сработает, попробовать вернуть http://
 RUN echo https://mirrors.dotsrc.org/alpine/v3.20/main > /etc/apk/repositories \
   && echo https://mirrors.dotsrc.org/alpine/v3.20/community >> /etc/apk/repositories \
   && apk update \
@@ -13,4 +12,7 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-CMD ["config/supervisord.conf"]
+EXPOSE 5000
+
+ENV FLASK_DEBUG=1
+CMD flask -A sdow/server.py:load_app run --host=0.0.0.0

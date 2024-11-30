@@ -10,10 +10,10 @@ from flask_compress import Compress
 from flask import Flask, request, jsonify
 from os import getenv
 
-from backend.sdow.database import Database
-from backend.sdow.helpers import InvalidRequest, fetch_wikipedia_pages_info
+from .database import Database
+from .helpers import InvalidRequest, fetch_wikipedia_pages_info
 
-database: Database
+db: Database
 
 # Initialize the Flask app.
 app = Flask(__name__)
@@ -30,8 +30,8 @@ Compress(app)
 # Connect to the SDOW database.
 @app.before_request
 def connect_db():
-    global database
-    database = Database(
+    global db
+    db = Database(
         dbname=getenv('DB_NAME', 'sdow'),
         user=getenv('DB_USER', 'postgres'),
         password=getenv('DB_PASSWORD', 'admin'),
@@ -48,7 +48,7 @@ def load_app(environment='dev'):
 
 @app.teardown_appcontext
 def close_db(exception=None):
-    database.close()
+    db.close()
 
 
 @app.errorhandler(500)
@@ -111,20 +111,20 @@ def shortest_paths_route():
     # Look up the IDs for each page.
     try:
         (source_page_id, source_page_title,
-         is_source_redirected) = database.fetch_page(request.json['source'])
+         is_source_redirected) = db.fetch_page(request.json['source'])
     except ValueError:
         raise InvalidRequest(
             'Start page "{0}" does not exist. Please try another search.'.format(request.json['source']))
 
     try:
         (target_page_id, target_page_title,
-         is_target_redirected) = database.fetch_page(request.json['target'])
+         is_target_redirected) = db.fetch_page(request.json['target'])
     except ValueError:
         raise InvalidRequest(
             'End page "{0}" does not exist. Please try another search.'.format(request.json['target']))
 
     # Compute the shortest paths.
-    paths = database.compute_shortest_paths(source_page_id, target_page_id)
+    paths = db.compute_shortest_paths(source_page_id, target_page_id)
 
     response = {
         'sourcePageTitle': source_page_title,
@@ -147,10 +147,10 @@ def shortest_paths_route():
                 page_ids_set.add(str(page_id))
 
         response['paths'] = paths
-        response['pages'] = fetch_wikipedia_pages_info(list(page_ids_set), database)
+        response['pages'] = fetch_wikipedia_pages_info(list(page_ids_set), db)
 
     try:
-        database.insert_result({
+        db.insert_result({
             'source_id': source_page_id,
             'target_id': target_page_id,
             'duration': time.time() - start_time,
