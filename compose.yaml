@@ -1,0 +1,11 @@
+services:
+  website:
+    build: website
+    ports:
+      - "3000:80"
+  postgres:
+    image: "postgres:17-alpine3.20"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: sdow
+      POSTGRES_PASSWORD: admin
