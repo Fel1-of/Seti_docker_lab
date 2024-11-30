@@ -14,5 +14,8 @@ COPY . .
 
 EXPOSE 5000
 
-ENV FLASK_DEBUG=1
-CMD flask -A sdow/server.py:load_app run --host=0.0.0.0
+# ENV FLASK_DEBUG=1
+# CMD flask -A sdow/server.py:load_app run --host=0.0.0.0
+
+ENV PYTHONUNBUFFERED=1
+CMD ["gunicorn", "sdow/server:load_app('prod')", "-c", "config/gunicorn.conf.py"]
