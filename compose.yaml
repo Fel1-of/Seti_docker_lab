@@ -29,3 +29,16 @@ services:
     environment:
       POSTGRES_DB: sdow
       POSTGRES_PASSWORD: genius
+  
+  migrate:
+    build: migrate
+    depends_on:
+      - postgres
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: genius
+      DB_NAME: sdow
+    networks:
+      - net

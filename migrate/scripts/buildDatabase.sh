@@ -2,6 +2,13 @@
 
 set -euo pipefail
 
+POSTGRES_HOST=${DB_HOST:-postgres}
+POSTGRES_PORT=${DB_PORT:-5432}
+POSTGRES_USER=${DB_USER:-postgres}
+POSTGRES_PASSWORD=${DB_PASSWORD:-genius}
+POSTGRES_DB=${POSTGRES_DB:-sdow}
+
+
 # Force default language for output sorting to be bytewise. Necessary to ensure uniformity amongst
 # UNIX commands.
 export LC_ALL=C
@@ -276,4 +283,16 @@ fi
 
 
 echo
+
+# Миграция данных
+if [ -f "sdow.sqlite" ]; then
+  echo "Миграция данных из SQLite в PostgreSQL..."
+  pgloader "sdow.sqlite"\
+    postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
+else
+  echo "Файл SQLite не найден, пропуск миграции."
+fi
+
+echo "Миграция завершена."
+
 echo "[INFO] All done!"
