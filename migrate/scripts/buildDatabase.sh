@@ -164,7 +164,7 @@ fi
 if [ ! -f redirects.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles in redirects file"
-  time python "$ROOT_DIR/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
+  time python "$ROOT_DIR/scripts/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
     | sort -S 100% -t $'\t' -k 1n,1n \
     | pigz --fast > redirects.with_ids.txt.gz.tmp
   mv redirects.with_ids.txt.gz.tmp redirects.with_ids.txt.gz
@@ -175,7 +175,7 @@ fi
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles and redirects in links file"
-  time python "$ROOT_DIR/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz \
+  time python "$ROOT_DIR/scripts/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz \
     | pigz --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
 else
@@ -185,7 +185,7 @@ fi
 if [ ! -f pages.pruned.txt.gz ]; then
   echo
   echo "[INFO] Pruning pages which are marked as redirects but with no redirect"
-  time python "$ROOT_DIR/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
+  time python "$ROOT_DIR/scripts/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
     | pigz --fast > pages.pruned.txt.gz
 else
   echo "[WARN] Already pruned pages which are marked as redirects but with no redirect"
@@ -250,7 +250,7 @@ fi
 if [ ! -f links.with_counts.txt.gz ]; then
   echo
   echo "[INFO] Combining grouped links files"
-  time python "$ROOT_DIR/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
+  time python "$ROOT_DIR/scripts/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
     | pigz --fast > links.with_counts.txt.gz.tmp
   mv links.with_counts.txt.gz.tmp links.with_counts.txt.gz
 else
@@ -264,15 +264,15 @@ fi
 if [ ! -f sdow.sqlite ]; then
   echo
   echo "[INFO] Creating redirects table"
-  time pigz -dc redirects.with_ids.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createRedirectsTable.sql"
+  time pigz -dc redirects.with_ids.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createRedirectsTable.sql"
 
   echo
   echo "[INFO] Creating pages table"
-  time pigz -dc pages.pruned.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createPagesTable.sql"
+  time pigz -dc pages.pruned.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createPagesTable.sql"
 
   echo
   echo "[INFO] Creating links table"
-  time pigz -dc links.with_counts.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/../sql/createLinksTable.sql"
+  time pigz -dc links.with_counts.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createLinksTable.sql"
 
   echo
   echo "[INFO] Compressing SQLite file"
