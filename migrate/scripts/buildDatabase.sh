@@ -2,11 +2,11 @@
 
 set -euo pipefail
 
-POSTGRES_HOST=${DB_HOST:-postgres}
-POSTGRES_PORT=${DB_PORT:-5432}
-POSTGRES_USER=${DB_USER:-postgres}
-POSTGRES_PASSWORD=${DB_PASSWORD:-genius}
-POSTGRES_DB=${POSTGRES_DB:-sdow}
+POSTGRES_HOST=${DB_HOST}
+POSTGRES_PORT=${DB_PORT}
+POSTGRES_USER=${DB_USER}
+POSTGRES_PASSWORD=${DB_PASSWORD}
+POSTGRES_DB=${DB_NAME}
 
 
 # Force default language for output sorting to be bytewise. Necessary to ensure uniformity amongst
@@ -16,7 +16,7 @@ export LC_ALL=C
 # By default, the latest Wikipedia dump will be downloaded. If a download date in the format
 # YYYYMMDD is provided as the first argument, it will be used instead.
 if [[ $# -eq 0 ]]; then
-  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.your.org/enwiki/ | grep -Po '\d{8}' | sort | tail -n1)
+  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/enwiki/ | grep -Po '\d{8}' | sort | tail -n1)
 else
   if [ ${#1} -ne 8 ]; then
     echo "[ERROR] Invalid download date provided: $1"
@@ -29,7 +29,7 @@ fi
 ROOT_DIR=`pwd`
 OUT_DIR="dump"
 
-DOWNLOAD_URL="https://dumps.wikimedia.your.org/enwiki/$DOWNLOAD_DATE"
+DOWNLOAD_URL="https://dumps.wikimedia.org/enwiki/$DOWNLOAD_DATE"
 TORRENT_URL="https://tools.wmflabs.org/dump-torrents/enwiki/$DOWNLOAD_DATE"
 
 SHA1SUM_FILENAME="enwiki-$DOWNLOAD_DATE-sha1sums.txt"
@@ -287,7 +287,7 @@ echo
 # Миграция данных
 if [ -f "sdow.sqlite" ]; then
   echo "Миграция данных из SQLite в PostgreSQL..."
-  pgloader "sdow.sqlite"\
+  pgloader "sqlite:///app/sdow.sqlite"\
     postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
 else
   echo "Файл SQLite не найден, пропуск миграции."
