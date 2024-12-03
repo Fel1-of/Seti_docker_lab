@@ -7,6 +7,8 @@ services:
     build: website
     ports:
       - "3000:80"
+    environment:
+      - API_URL=backend
     networks:
       - net
 
@@ -15,8 +17,11 @@ services:
     ports:
       - "5000:5000"
     environment:
-      DB_HOST: postgres
-      DB_PASSWORD: genius
+      - DB_HOST=postgres
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
     networks:
       - net
     depends_on:
@@ -27,5 +32,7 @@ services:
     networks:
       - net
     environment:
-      POSTGRES_DB: sdow
-      POSTGRES_PASSWORD: genius
+      - POSTGRES_PORT=${DB_PORT}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
