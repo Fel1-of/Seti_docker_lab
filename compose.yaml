@@ -17,15 +17,25 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - DB_HOST=postgres
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
+      DB_HOST: postgres
+      DB_PASSWORD: genius
     networks:
       - net
     depends_on:
       - postgres
+
+  migrate:
+    build: migrate
+    depends_on:
+      - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_PORT}
+    networks:
+      - net
 
   postgres:
     image: "postgres:17-alpine3.20"
