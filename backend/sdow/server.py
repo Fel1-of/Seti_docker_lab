@@ -34,7 +34,7 @@ def connect_db():
     db = Database(
         dbname=getenv('DB_NAME', 'sdow'),
         user=getenv('DB_USER', 'postgres'),
-        password=getenv('DB_PASSWORD', 'admin'),
+        password=getenv('DB_PASSWORD', 'genius'),
         host=getenv('DB_HOST', 'localhost'),
         port=getenv('DB_PORT', '5432')
     )

@@ -28,14 +28,17 @@ if not REDIRECTS_FILE.endswith('.gz'):
 
 # Create a dictionary of redirects.
 REDIRECTS = {}
-for line in io.BufferedReader(gzip.open(REDIRECTS_FILE, 'r')):
-  [source_page_id, _] = line.rstrip('\n').split('\t')
-  REDIRECTS[source_page_id] = True
+with gzip.open(REDIRECTS_FILE, 'rt', encoding='utf-8') as redirects_file:
+    for line in redirects_file:
+        source_page_id, _ = line.rstrip('\n').split('\t')
+        REDIRECTS[source_page_id] = True
 
 # Loop through the pages file, ignoring pages which are marked as redirects but which do not have a
 # corresponding redirect in the redirects dictionary, printing the remaining pages to stdout.
-for line in io.BufferedReader(gzip.open(PAGES_FILE, 'r')):
-  [page_id, page_title, is_redirect] = line.rstrip('\n').split('\t')
+with gzip.open(PAGES_FILE, 'rt', encoding='utf-8') as pages_file:
+    for line in pages_file:
+        page_id, page_title, is_redirect = line.rstrip('\n').split('\t')
 
-  if is_redirect == '0' or page_id in REDIRECTS:
-    print('\t'.join([page_id, page_title, is_redirect]))
+        # Keep the page if it is not a redirect or if it has a corresponding entry in REDIRECTS
+        if is_redirect == '0' or page_id in REDIRECTS:
+            print('\t'.join([page_id, page_title, is_redirect]))

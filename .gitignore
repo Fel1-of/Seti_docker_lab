@@ -1,6 +1,7 @@
 # Mock databases
 backend/sdow/sdow.sqlite
 backend/sdow/searches.sqlite
+dump/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

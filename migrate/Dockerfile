@@ -11,6 +11,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x scripts/buildDatabase.sh
+# Делаем скрипт исполняемым
+RUN chmod +x /app/scripts/buildDatabase.sh
 
-CMD ["./scripts/buildDatabase.sh"]
+# Указываем, что запускать по умолчанию
+CMD ["/app/scripts/buildDatabase.sh"]

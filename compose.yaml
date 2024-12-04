@@ -4,6 +4,8 @@ networks:
 
 volumes:
   postgres_data:
+  dump:
+
 
 services:
   website:
@@ -42,6 +44,8 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
+    volumes:
+      - dump:/app/dump
     profiles:
       - migrate
     networks:
@@ -63,3 +67,4 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - net
+

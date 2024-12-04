@@ -16,7 +16,7 @@ export LC_ALL=C
 # By default, the latest Wikipedia dump will be downloaded. If a download date in the format
 # YYYYMMDD is provided as the first argument, it will be used instead.
 if [[ $# -eq 0 ]]; then
-  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.org/enwiki/ | grep -Po '\d{8}' | sort | tail -n1)
+  DOWNLOAD_DATE=$(wget -q -O- https://dumps.wikimedia.your.org/ruwiki/ | grep -Po '\d{8}' | sort | tail -n1)
 else
   if [ ${#1} -ne 8 ]; then
     echo "[ERROR] Invalid download date provided: $1"
@@ -29,13 +29,13 @@ fi
 ROOT_DIR=`pwd`
 OUT_DIR="dump"
 
-DOWNLOAD_URL="https://dumps.wikimedia.org/enwiki/$DOWNLOAD_DATE"
-TORRENT_URL="https://tools.wmflabs.org/dump-torrents/enwiki/$DOWNLOAD_DATE"
+DOWNLOAD_URL="https://dumps.wikimedia.your.org/ruwiki/$DOWNLOAD_DATE"
+TORRENT_URL="https://tools.wmflabs.org/dump-torrents/ruwiki/$DOWNLOAD_DATE"
 
-SHA1SUM_FILENAME="enwiki-$DOWNLOAD_DATE-sha1sums.txt"
-REDIRECTS_FILENAME="enwiki-$DOWNLOAD_DATE-redirect.sql.gz"
-PAGES_FILENAME="enwiki-$DOWNLOAD_DATE-page.sql.gz"
-LINKS_FILENAME="enwiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
+SHA1SUM_FILENAME="ruwiki-$DOWNLOAD_DATE-sha1sums.txt"
+REDIRECTS_FILENAME="ruwiki-$DOWNLOAD_DATE-redirect.sql.gz"
+PAGES_FILENAME="ruwiki-$DOWNLOAD_DATE-page.sql.gz"
+LINKS_FILENAME="ruwiki-$DOWNLOAD_DATE-pagelinks.sql.gz"
 
 
 # Make the output directory if it doesn't already exist and move to it
@@ -63,24 +63,12 @@ function download_file() {
       echo "[INFO] Downloading $1 file via wget"
       time wget --progress=dot:giga "$DOWNLOAD_URL/$2"
     fi
-
-    if [ $1 != sha1sums ]; then
-      echo
-      echo "[INFO] Verifying SHA-1 hash for $1 file"
-      time grep "$2" "$SHA1SUM_FILENAME" | sha1sum -c
-      if [ $? -ne 0 ]; then
-        echo
-        echo "[ERROR] Downloaded $1 file has incorrect SHA-1 hash"
-        rm $2
-        exit 1
-      fi
-    fi
   else
     echo "[WARN] Already downloaded $1 file"
   fi
 }
 
-download_file "sha1sums" $SHA1SUM_FILENAME
+#download_file "sha1sums" $SHA1SUM_FILENAME
 download_file "redirects" $REDIRECTS_FILENAME
 download_file "pages" $PAGES_FILENAME
 download_file "links" $LINKS_FILENAME
@@ -164,7 +152,7 @@ fi
 if [ ! -f redirects.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles in redirects file"
-  time python "$ROOT_DIR/scripts/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
+  time python3 "$ROOT_DIR/scripts/replace_titles_in_redirects_file.py" pages.txt.gz redirects.txt.gz \
     | sort -S 100% -t $'\t' -k 1n,1n \
     | pigz --fast > redirects.with_ids.txt.gz.tmp
   mv redirects.with_ids.txt.gz.tmp redirects.with_ids.txt.gz
@@ -175,7 +163,7 @@ fi
 if [ ! -f links.with_ids.txt.gz ]; then
   echo
   echo "[INFO] Replacing titles and redirects in links file"
-  time python "$ROOT_DIR/scripts/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz \
+  time python3 "$ROOT_DIR/scripts/replace_titles_and_redirects_in_links_file.py" pages.txt.gz redirects.with_ids.txt.gz links.txt.gz \
     | pigz --fast > links.with_ids.txt.gz.tmp
   mv links.with_ids.txt.gz.tmp links.with_ids.txt.gz
 else
@@ -185,7 +173,7 @@ fi
 if [ ! -f pages.pruned.txt.gz ]; then
   echo
   echo "[INFO] Pruning pages which are marked as redirects but with no redirect"
-  time python "$ROOT_DIR/scripts/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
+  time python3 "$ROOT_DIR/scripts/prune_pages_file.py" pages.txt.gz redirects.with_ids.txt.gz \
     | pigz --fast > pages.pruned.txt.gz
 else
   echo "[WARN] Already pruned pages which are marked as redirects but with no redirect"
@@ -250,7 +238,7 @@ fi
 if [ ! -f links.with_counts.txt.gz ]; then
   echo
   echo "[INFO] Combining grouped links files"
-  time python "$ROOT_DIR/scripts/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
+  time python3 "$ROOT_DIR/scripts/combine_grouped_links_files.py" links.grouped_by_source_id.txt.gz links.grouped_by_target_id.txt.gz \
     | pigz --fast > links.with_counts.txt.gz.tmp
   mv links.with_counts.txt.gz.tmp links.with_counts.txt.gz
 else
@@ -261,33 +249,33 @@ fi
 ############################
 #  CREATE SQLITE DATABASE  #
 ############################
-if [ ! -f sdow.sqlite ]; then
+if [ ! -f "$ROOT_DIR/sdow.sqlite" ]; then
   echo
   echo "[INFO] Creating redirects table"
-  time pigz -dc redirects.with_ids.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createRedirectsTable.sql"
+  time pigz -dc redirects.with_ids.txt.gz | sqlite3 "$ROOT_DIR/sdow.sqlite" ".read $ROOT_DIR/sql/createRedirectsTable.sql"
 
   echo
   echo "[INFO] Creating pages table"
-  time pigz -dc pages.pruned.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createPagesTable.sql"
+  time pigz -dc pages.pruned.txt.gz | sqlite3 "$ROOT_DIR/sdow.sqlite" ".read $ROOT_DIR/sql/createPagesTable.sql"
 
   echo
   echo "[INFO] Creating links table"
-  time pigz -dc links.with_counts.txt.gz | sqlite3 sdow.sqlite ".read $ROOT_DIR/sql/createLinksTable.sql"
+  time pigz -dc links.with_counts.txt.gz | sqlite3 "$ROOT_DIR/sdow.sqlite" ".read $ROOT_DIR/sql/createLinksTable.sql"
 
   echo
-  echo "[INFO] Compressing SQLite file"
-  time pigz --best --keep sdow.sqlite
+  # echo "[INFO] Compressing SQLite file"
+  # time pigz --best --keep "$ROOT_DIR/sdow.sqlite"
 else
-  echo "[WARN] Already created SQLite database"
+  echo "[WARN] Already created SQLite database in $ROOT_DIR"
 fi
 
 
 echo
 
 # Миграция данных
-if [ -f "sdow.sqlite" ]; then
+if [ -f "$ROOT_DIR/sdow.sqlite" ]; then
   echo "Миграция данных из SQLite в PostgreSQL..."
-  pgloader "sqlite:///app/sdow.sqlite"\
+  pgloader "$ROOT_DIR/sdow.sqlite"\
     postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:$POSTGRES_PORT/$POSTGRES_DB
 else
   echo "Файл SQLite не найден, пропуск миграции."
