@@ -2,6 +2,10 @@ networks:
   net:
     driver: bridge
 
+volumes:
+  postgres_data:
+  dump:
+
 services:
   website:
     build: website
@@ -39,6 +43,8 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
+    volumes:
+      - dump:/app/dump
     profiles:
       - migrate
     networks:
@@ -52,7 +58,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 1s
       timeout: 5s
       retries: 10
@@ -60,3 +66,4 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - net
+
